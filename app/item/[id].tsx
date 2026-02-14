@@ -7,6 +7,7 @@ import * as Haptics from 'expo-haptics';
 import Colors from '@/constants/colors';
 import { useApp } from '@/contexts/AppContext';
 import RequestSheet from '@/components/RequestSheet';
+import ReportSheet from '@/components/ReportSheet';
 
 function getCatColor(cat: string) {
   return (Colors.categories as any)[cat.toLowerCase()] || Colors.categories.other;
@@ -29,6 +30,7 @@ export default function ItemDetailScreen() {
   const { getItemById, currentUser, appreciateItem, addComment, requestItem } = useApp();
   const [commentText, setCommentText] = useState('');
   const [showRequestSheet, setShowRequestSheet] = useState(false);
+  const [showReportSheet, setShowReportSheet] = useState(false);
 
   const item = getItemById(id);
 
@@ -74,7 +76,13 @@ export default function ItemDetailScreen() {
           <Ionicons name="arrow-back" size={24} color={Colors.text} />
         </Pressable>
         <Text style={styles.headerTitle} numberOfLines={1}>{item.title}</Text>
-        <View style={{ width: 24 }} />
+        {currentUser && !isOwner ? (
+          <Pressable onPress={() => setShowReportSheet(true)} hitSlop={12}>
+            <Ionicons name="flag-outline" size={20} color={Colors.textTertiary} />
+          </Pressable>
+        ) : (
+          <View style={{ width: 24 }} />
+        )}
       </View>
 
       <ScrollView
@@ -101,6 +109,12 @@ export default function ItemDetailScreen() {
             <View style={styles.claimedBanner}>
               <Ionicons name="checkmark-circle" size={16} color="#fff" />
               <Text style={styles.claimedBannerText}>Claimed</Text>
+            </View>
+          )}
+          {item.status === 'completed' && (
+            <View style={[styles.claimedBanner, { backgroundColor: Colors.secondary }]}>
+              <Ionicons name="checkmark-done" size={16} color="#fff" />
+              <Text style={styles.claimedBannerText}>Completed</Text>
             </View>
           )}
         </View>
@@ -226,6 +240,15 @@ export default function ItemDetailScreen() {
         onClose={() => setShowRequestSheet(false)}
         onSubmit={(reason) => requestItem(item.id, reason)}
       />
+
+      {!isOwner && (
+        <ReportSheet
+          visible={showReportSheet}
+          onClose={() => setShowReportSheet(false)}
+          reportedUserId={item.userId}
+          reportedUsername={item.username}
+        />
+      )}
     </KeyboardAvoidingView>
   );
 }
@@ -241,294 +264,78 @@ function DetailRow({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMa
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
+  container: { flex: 1, backgroundColor: Colors.background },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.borderLight,
-    gap: 12,
+    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingBottom: 12,
+    borderBottomWidth: 1, borderBottomColor: Colors.borderLight, gap: 12,
   },
-  headerTitle: {
-    flex: 1,
-    fontSize: 17,
-    fontFamily: 'Nunito_700Bold',
-    color: Colors.text,
-    textAlign: 'center',
-  },
-  scrollContent: {
-    paddingBottom: 100,
-  },
-  heroImage: {
-    height: 240,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  headerTitle: { flex: 1, fontSize: 17, fontFamily: 'Nunito_700Bold', color: Colors.text, textAlign: 'center' },
+  scrollContent: { paddingBottom: 100 },
+  heroImage: { height: 240, alignItems: 'center', justifyContent: 'center' },
   claimedBanner: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: Colors.success,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
+    position: 'absolute', top: 16, right: 16, flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: Colors.success, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
   },
-  claimedBannerText: {
-    fontSize: 12,
-    fontFamily: 'Nunito_700Bold',
-    color: '#fff',
-  },
-  body: {
-    padding: 20,
-  },
-  titleRow: {
-    marginBottom: 12,
-  },
-  titleInfo: {
-    gap: 8,
-  },
-  itemTitle: {
-    fontSize: 24,
-    fontFamily: 'Nunito_800ExtraBold',
-    color: Colors.text,
-  },
-  catBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 12,
-  },
-  catBadgeText: {
-    fontSize: 12,
-    fontFamily: 'Nunito_700Bold',
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  userPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  userAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  userAvatarText: {
-    fontSize: 13,
-    fontFamily: 'Nunito_700Bold',
-  },
-  userPillName: {
-    fontSize: 14,
-    fontFamily: 'Nunito_600SemiBold',
-    color: Colors.text,
-  },
-  timeText: {
-    fontSize: 13,
-    fontFamily: 'Nunito_400Regular',
-    color: Colors.textTertiary,
-  },
+  claimedBannerText: { fontSize: 12, fontFamily: 'Nunito_700Bold', color: '#fff' },
+  body: { padding: 20 },
+  titleRow: { marginBottom: 12 },
+  titleInfo: { gap: 8 },
+  itemTitle: { fontSize: 24, fontFamily: 'Nunito_800ExtraBold', color: Colors.text },
+  catBadge: { alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 5, borderRadius: 12 },
+  catBadgeText: { fontSize: 12, fontFamily: 'Nunito_700Bold' },
+  metaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
+  userPill: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  userAvatar: { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  userAvatarText: { fontSize: 13, fontFamily: 'Nunito_700Bold' },
+  userPillName: { fontSize: 14, fontFamily: 'Nunito_600SemiBold', color: Colors.text },
+  timeText: { fontSize: 13, fontFamily: 'Nunito_400Regular', color: Colors.textTertiary },
   detailsSection: {
-    backgroundColor: Colors.surface,
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 20,
-    gap: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
+    backgroundColor: Colors.surface, borderRadius: 14, padding: 14, marginBottom: 20, gap: 10,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1,
   },
-  detailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  detailLabel: {
-    fontSize: 13,
-    fontFamily: 'Nunito_600SemiBold',
-    color: Colors.textTertiary,
-    width: 70,
-  },
-  detailValue: {
-    flex: 1,
-    fontSize: 14,
-    fontFamily: 'Nunito_600SemiBold',
-    color: Colors.text,
-  },
-  sectionLabel: {
-    fontSize: 15,
-    fontFamily: 'Nunito_700Bold',
-    color: Colors.text,
-    marginBottom: 8,
-    marginTop: 4,
-  },
-  descriptionText: {
-    fontSize: 15,
-    fontFamily: 'Nunito_400Regular',
-    color: Colors.textSecondary,
-    lineHeight: 22,
-    marginBottom: 16,
-  },
+  detailRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  detailLabel: { fontSize: 13, fontFamily: 'Nunito_600SemiBold', color: Colors.textTertiary, width: 70 },
+  detailValue: { flex: 1, fontSize: 14, fontFamily: 'Nunito_600SemiBold', color: Colors.text },
+  sectionLabel: { fontSize: 15, fontFamily: 'Nunito_700Bold', color: Colors.text, marginBottom: 8, marginTop: 4 },
+  descriptionText: { fontSize: 15, fontFamily: 'Nunito_400Regular', color: Colors.textSecondary, lineHeight: 22, marginBottom: 16 },
   storyCard: {
-    flexDirection: 'row',
-    backgroundColor: Colors.primary + '08',
-    borderRadius: 12,
-    padding: 14,
-    gap: 10,
-    marginBottom: 20,
-    borderLeftWidth: 3,
-    borderLeftColor: Colors.primary,
+    flexDirection: 'row', backgroundColor: Colors.primary + '08', borderRadius: 12, padding: 14,
+    gap: 10, marginBottom: 20, borderLeftWidth: 3, borderLeftColor: Colors.primary,
   },
-  storyText: {
-    flex: 1,
-    fontSize: 14,
-    fontFamily: 'Nunito_400Regular',
-    color: Colors.text,
-    lineHeight: 21,
-    fontStyle: 'italic' as const,
-  },
+  storyText: { flex: 1, fontSize: 14, fontFamily: 'Nunito_400Regular', color: Colors.text, lineHeight: 21, fontStyle: 'italic' as const },
   interactRow: {
-    flexDirection: 'row',
-    gap: 24,
-    paddingVertical: 14,
-    borderTopWidth: 1,
-    borderTopColor: Colors.borderLight,
-    marginBottom: 8,
+    flexDirection: 'row', gap: 24, paddingVertical: 14, borderTopWidth: 1,
+    borderTopColor: Colors.borderLight, marginBottom: 8,
   },
-  interactBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  interactCount: {
-    fontSize: 14,
-    fontFamily: 'Nunito_600SemiBold',
-    color: Colors.textSecondary,
-  },
+  interactBtn: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  interactCount: { fontSize: 14, fontFamily: 'Nunito_600SemiBold', color: Colors.textSecondary },
   requestFullBtn: {
-    backgroundColor: Colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 16,
-    borderRadius: 14,
-    marginBottom: 20,
+    backgroundColor: Colors.primary, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, paddingVertical: 16, borderRadius: 14, marginBottom: 20,
   },
-  requestFullBtnText: {
-    fontSize: 16,
-    fontFamily: 'Nunito_700Bold',
-    color: '#fff',
-  },
+  requestFullBtnText: { fontSize: 16, fontFamily: 'Nunito_700Bold', color: '#fff' },
   requestedBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: Colors.success + '10',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
-    marginBottom: 20,
+    flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: Colors.success + '10',
+    paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12, marginBottom: 20,
   },
-  requestedText: {
-    fontSize: 14,
-    fontFamily: 'Nunito_600SemiBold',
-    color: Colors.success,
-  },
-  commentsSection: {
-    marginTop: 8,
-  },
-  commentCard: {
-    backgroundColor: Colors.surface,
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 8,
-  },
-  commentHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  commentUser: {
-    fontSize: 13,
-    fontFamily: 'Nunito_700Bold',
-    color: Colors.text,
-  },
-  commentTime: {
-    fontSize: 11,
-    fontFamily: 'Nunito_400Regular',
-    color: Colors.textTertiary,
-  },
-  commentText: {
-    fontSize: 14,
-    fontFamily: 'Nunito_400Regular',
-    color: Colors.textSecondary,
-    lineHeight: 20,
-  },
+  requestedText: { fontSize: 14, fontFamily: 'Nunito_600SemiBold', color: Colors.success },
+  commentsSection: { marginTop: 8 },
+  commentCard: { backgroundColor: Colors.surface, borderRadius: 12, padding: 12, marginBottom: 8 },
+  commentHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
+  commentUser: { fontSize: 13, fontFamily: 'Nunito_700Bold', color: Colors.text },
+  commentTime: { fontSize: 11, fontFamily: 'Nunito_400Regular', color: Colors.textTertiary },
+  commentText: { fontSize: 14, fontFamily: 'Nunito_400Regular', color: Colors.textSecondary, lineHeight: 20 },
   commentBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    backgroundColor: Colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: Colors.borderLight,
-    gap: 8,
+    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 10,
+    backgroundColor: Colors.surface, borderTopWidth: 1, borderTopColor: Colors.borderLight, gap: 8,
   },
   commentInput: {
-    flex: 1,
-    backgroundColor: Colors.surfaceSecondary,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    fontSize: 14,
-    fontFamily: 'Nunito_400Regular',
-    color: Colors.text,
+    flex: 1, backgroundColor: Colors.surfaceSecondary, borderRadius: 20, paddingHorizontal: 16,
+    paddingVertical: 10, fontSize: 14, fontFamily: 'Nunito_400Regular', color: Colors.text,
   },
-  sendBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  notFound: {
-    alignItems: 'center',
-    paddingHorizontal: 40,
-  },
-  notFoundTitle: {
-    fontSize: 18,
-    fontFamily: 'Nunito_700Bold',
-    color: Colors.text,
-    marginTop: 16,
-  },
-  backButton: {
-    marginTop: 20,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    backgroundColor: Colors.primary,
-    borderRadius: 12,
-  },
-  backButtonText: {
-    fontSize: 15,
-    fontFamily: 'Nunito_700Bold',
-    color: '#fff',
-  },
+  sendBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  notFound: { alignItems: 'center', paddingHorizontal: 40 },
+  notFoundTitle: { fontSize: 18, fontFamily: 'Nunito_700Bold', color: Colors.text, marginTop: 16 },
+  backButton: { marginTop: 20, paddingHorizontal: 24, paddingVertical: 12, backgroundColor: Colors.primary, borderRadius: 12 },
+  backButtonText: { fontSize: 15, fontFamily: 'Nunito_700Bold', color: '#fff' },
 });

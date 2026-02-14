@@ -21,19 +21,11 @@ function RootLayoutNav() {
   return (
     <Stack screenOptions={{ headerBackTitle: "Back" }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="create"
-        options={{
-          headerShown: false,
-          presentation: "modal",
-        }}
-      />
-      <Stack.Screen
-        name="item/[id]"
-        options={{
-          headerShown: false,
-        }}
-      />
+      <Stack.Screen name="create" options={{ headerShown: false, presentation: "modal" }} />
+      <Stack.Screen name="item/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="auth" options={{ headerShown: false, presentation: "modal" }} />
+      <Stack.Screen name="edit-profile" options={{ headerShown: false, presentation: "modal" }} />
+      <Stack.Screen name="create-moment" options={{ headerShown: false, presentation: "modal" }} />
     </Stack>
   );
 }
