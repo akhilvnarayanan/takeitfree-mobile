@@ -1,12 +1,42 @@
-// template
-const tintColorLight = "#2f95dc";
-
-export default {
+const Colors = {
+  primary: '#E8725A',
+  primaryLight: '#F5A591',
+  primaryDark: '#C9523A',
+  secondary: '#1B8A7A',
+  secondaryLight: '#3DB8A6',
+  secondaryDark: '#0E6B5D',
+  accent: '#F4C753',
+  background: '#FAFAF8',
+  surface: '#FFFFFF',
+  surfaceSecondary: '#F2F0ED',
+  text: '#1A1A1A',
+  textSecondary: '#6B6B6B',
+  textTertiary: '#9E9E9E',
+  border: '#E8E5E0',
+  borderLight: '#F0EDEA',
+  error: '#E53935',
+  success: '#43A047',
+  warning: '#FB8C00',
+  overlay: 'rgba(0,0,0,0.5)',
+  cardShadow: 'rgba(0,0,0,0.06)',
+  appreciate: '#E8725A',
+  categories: {
+    books: '#5C6BC0',
+    clothes: '#EC407A',
+    electronics: '#26A69A',
+    furniture: '#8D6E63',
+    toys: '#FFA726',
+    kitchen: '#66BB6A',
+    sports: '#42A5F5',
+    other: '#78909C',
+  },
   light: {
-    text: "#000",
-    background: "#fff",
-    tint: tintColorLight,
-    tabIconDefault: "#ccc",
-    tabIconSelected: tintColorLight,
+    text: '#1A1A1A',
+    background: '#FAFAF8',
+    tint: '#E8725A',
+    tabIconDefault: '#9E9E9E',
+    tabIconSelected: '#E8725A',
   },
 };
+
+export default Colors;
